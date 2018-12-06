@@ -22,6 +22,7 @@ font_but.setPointSize(10)
 font_but.setWeight(95)
 
 
+# Главное окно
 class MainScene(QtCore.QObject):
     signal = pyqtSignal()
 
@@ -55,6 +56,7 @@ class MainScene(QtCore.QObject):
         self.buttonStopIdentification = QtWidgets.QPushButton(self.centralwidget)
         self.processMessage = QtWidgets.QLabel(self.centralwidget)
 
+        # Инициация стилей
         self.guiInitLabelBlock()
         self.guiInitNameText()
         self.guiInitStartIdentificationButton()
@@ -65,6 +67,7 @@ class MainScene(QtCore.QObject):
         self.guiInitHBox()
         self.guiInitLogTextLine()
 
+    # Показ текущего окна
     def setupUI(self, aligner, extract_feature, face_detect):
         print("start ui")
         self.aligner = aligner
@@ -72,6 +75,7 @@ class MainScene(QtCore.QObject):
         self.face_detect = face_detect
         self.MainWindow.setCentralWidget(self.centralwidget)
 
+    # Инициация блока для вывода сообщения об обработке
     def guiInitLabelTextBlock(self):
         self.processMessage.hide()
         self.processMessage.setText("Обработка")
@@ -91,6 +95,7 @@ class MainScene(QtCore.QObject):
         self.processMessage.setText("Обработка...")
         self.processMessage.move(0, 480)
 
+    # Инициация блока для показа картинки
     def guiInitLabelBlock(self):
         self.label.setStyleSheet("""
                                                     background-color: rgba(0, 255, 0, 1); margin: 7px
@@ -106,11 +111,13 @@ class MainScene(QtCore.QObject):
             """)
         self.label.move(0, 60)
 
+    # Инициация текстового блока для ввода имени
     def guiInitNameText(self):
         self.textName.setPlaceholderText("Ваше имя")
         self.textName.setFont(font_but)
         self.textName.setFixedWidth(170)
 
+    # Инициация блока логгирования
     def guiInitLogTextLine(self):
         self.textf.setFrameShape(QFrame.NoFrame)
         self.textf.setPlaceholderText("Логгирование туть")
@@ -132,12 +139,14 @@ class MainScene(QtCore.QObject):
         self.textf.setFixedHeight(160)
         self.textf.move(0, 540)
 
+    # Инициация кнопки старта обучения
     def guiInitStartIdentificationButton(self):
         self.startIdentificationButton.setText("Обучение")
         self.startIdentificationButton.setFixedWidth(120)
         self.startIdentificationButton.setFont(font_but)
         self.startIdentificationButton.clicked.connect(self.startIdentification)
 
+    # Инициация кнопки успешного завершения идентификации
     def guiInitStopIdentificationButton(self):
         self.buttonStopIdentification.setText("Завершить идентификацию")
         self.buttonStopIdentification.setObjectName("stopIdentificationButton")
@@ -171,18 +180,21 @@ class MainScene(QtCore.QObject):
         self.buttonStopIdentification.move(70, 480)
         self.buttonStopIdentification.clicked.connect(self.stopIdentification)
 
+    # Инициация кнопки старта распознания
     def guiInitStartRecognitionButton(self):
         self.startRecognitionButton.setText("Распознавание")
         self.startRecognitionButton.setFixedWidth(180)
         self.startRecognitionButton.setFont(font_but)
         self.startRecognitionButton.clicked.connect(self.startRecognition)
 
+    # Инициация кнопки удаления
     def guiInitDeleteButton(self):
         self.delete.setText("Удалить")
         self.delete.setFixedWidth(120)
         self.delete.setFont(font_but)
         self.delete.clicked.connect(self.deleteRow)
 
+    # Инициация меню-бокса
     def guiInitHBox(self):
         self.menuLayout.addWidget(self.textName, alignment=QtCore.Qt.AlignTop)
         self.menuLayout.addWidget(self.startIdentificationButton, alignment=QtCore.Qt.AlignTop)
@@ -190,6 +202,7 @@ class MainScene(QtCore.QObject):
         self.menuLayout.addWidget(self.delete, alignment=QtCore.Qt.AlignTop)
         self.menuLayout.setContentsMargins(7, 7, 7, 7)
 
+    # Метод, вызываемый при клике на "Удалить". Происходит считывание имени, нахождение его в json и удаление его
     def deleteRow(self):
         try:
             name = self.textName.text()
@@ -201,7 +214,7 @@ class MainScene(QtCore.QObject):
                 self.log("Имя содержит недопустимые символы. Введите имя на английском")
                 return
 
-            f = open(os.path.join(self.__location__, 'services\storage.json'), 'r')
+            f = open(os.path.join(self.__location__, 'services/storage.json'), 'r')
             data_set = json.loads(f.read())
 
             if name in data_set:
@@ -215,6 +228,8 @@ class MainScene(QtCore.QObject):
         except Exception as e:
             print("3:" + str(e))
 
+    # Метод, вызываемый при клике на "Обучение". Считывание имени. Прерывание процесса распознавания (если есть).
+    # Запуск процесса обучения
     def startIdentification(self):
         try:
             name = self.textName.text()
@@ -252,6 +267,7 @@ class MainScene(QtCore.QObject):
         except Exception as e:
             print("2:" + str(e))
 
+    # Успешное завершение процесса обучения (кнопка "Завершить идентификацию")
     def stopIdentification(self):
         try:
             if self.identificationThread is not None:
@@ -259,6 +275,7 @@ class MainScene(QtCore.QObject):
         except Exception as e:
             print("4: " + str(e))
 
+    # Коллбек, вызываемый процессом обучения (успешное сохранение данных)
     def successfulSaveIdentificationResult(self):
         self.identificationThread = None
         if self.recognitionThread is None:
@@ -273,11 +290,18 @@ class MainScene(QtCore.QObject):
         else:
             self.label.setText("")
 
+    # Метод, вызываемый при клике на "Распознание". Считывание имени. Прерывание процесса идентификации (если есть).
+    # Запуск процесса распознания
     def startRecognition(self):
         try:
-            if self.textName.text() == "":
+            name = self.textName.text()
+            if name == "":
                 self.log("Введите имя")
-                raise Exception
+                return
+
+            if regex.search(r'\p{IsCyrillic}', name):
+                self.log("Имя содержит недопустимые символы. Введите имя на английском")
+                return
 
             if self.identificationThread is not None:
                 self.identificationThread.interrupt()
@@ -289,7 +313,7 @@ class MainScene(QtCore.QObject):
             self.buttonStopIdentification.hide()
             self.recognitionThread = Recognition(
                 face_detect=self.face_detect, aligner=self.aligner, extract_feature=self.extract_feature,
-                name=self.textName.text(), vs=self.vs
+                name=name, vs=self.vs
             )
             self.recognitionThread.start()
             self.recognitionThread.log.connect(self.log)
@@ -298,24 +322,26 @@ class MainScene(QtCore.QObject):
         except Exception as e:
             print("1: " + str(e))
 
+    # Коллбек, вызываемый для добавления записи в текстовый блок (время + сообщение)
     def log(self, string):
         self.textf.append(str(datetime.datetime.now().time()) + ": " + string)
 
+    # Коллбек, вызываемый для обновления картинки
     def update(self, qimage):
         self.label.setPixmap(QtGui.QPixmap(qimage))
         self.processMessage.hide()
 
+    # Коллбек, вызываемый при обработке данных (серое размытое изображение + текст "Обработка")
     def process(self, qimage):
         self.label.setPixmap(QtGui.QPixmap(qimage))
         self.processMessage.show()
 
+    # Коллбек, вызываемый в случае, если данных, полученных с камеры, хватает для обучения (все три стороны считаны)
+    # Показывает кнопку "Завершить идентификацию")
     def allowStopIdentification(self):
         self.buttonStopIdentification.show()
 
+    # Коллбек, вызываемый в случае, когда происходит сохранение данных (скрывает кнопку "Завершить идентификацию")
     def disAllowStopIdentification(self):
         self.buttonStopIdentification.hide()
 
-    def loadingFinish(self, aligner, extract_feature, face_detect):
-        self.aligner = aligner
-        self.extract_feature = extract_feature
-        self.face_detect = face_detect

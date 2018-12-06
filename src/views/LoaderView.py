@@ -9,6 +9,7 @@ from src.lib.face_feature import FaceFeature
 from src.lib.mtcnn_detect import MTCNNDetect
 
 
+# Класс лоадера
 class LoaderScene(QtCore.QObject):
     startProgram = pyqtSignal(AlignCustom, FaceFeature, MTCNNDetect)
 
@@ -17,6 +18,8 @@ class LoaderScene(QtCore.QObject):
 
         self.MainWindow = parent
         self.centralWidget = QtWidgets.QWidget(self.MainWindow)
+
+        # Задание стилей
         self.setObjectName("loaderWidget")
         self.centralWidget.setFixedWidth(640)
         self.centralWidget.setFixedHeight(700)
@@ -77,18 +80,22 @@ class LoaderScene(QtCore.QObject):
         # Выявление особенностей лица
         self.extract_feature = None
 
+    # инициация графических элементов
     def setupUI(self):
         self.MainWindow.setCentralWidget(self.centralWidget)
         self.startLoading()
 
+    # инициация загрузки модулей
     def startLoading(self):
         if self.loaderThread is None:
             self.loaderThread = Loader()
             self.loaderThread.finishLoad.connect(self.loadingFinish)
             self.loaderThread.start()
 
+    # коллбек, вызываемый после загрузки модулей
     def loadingFinish(self, aligner, extract_feature, face_detect):
         self.aligner = aligner
         self.extract_feature = extract_feature
         self.face_detect = face_detect
+        # запуск главного окна
         self.startProgram.emit(aligner, extract_feature, face_detect)

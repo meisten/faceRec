@@ -1,10 +1,7 @@
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QPixmap, QImage
+from PyQt5 import QtCore
+from PyQt5.QtCore import pyqtSignal
 
 import os
-import json
-import numpy as np
 
 from src.lib.align_custom import AlignCustom
 from src.lib.face_feature import FaceFeature

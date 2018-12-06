@@ -9,13 +9,16 @@ font_but.setPointSize(10)
 font_but.setWeight(95)
 
 
+# Показ главного элемента
 class QthreadApp(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
 
+        # задание иконки приложения
         image = QtGui.QIcon('./styles/spbstu.png')
         self.setWindowIcon(image)
+        # задание стилей
         self.setObjectName("index")
         self.setStyleSheet(
             """
@@ -35,20 +38,26 @@ class QthreadApp(QtWidgets.QMainWindow):
         self.mainScene = None
         self.loaderScene = None
 
+        # вызов активити лоадера, который подгружает необходимые библиотеки
         self.startLoader()
 
+    # метод для вызова лоадера
     def startLoader(self):
         self.loaderScene = LoaderScene(self)
+        # коллбек, вызываемый после того, как все модули будут загружены
         self.loaderScene.startProgram.connect(self.startMain)
+        # Отрисовка графических элементов
         self.loaderScene.setupUI()
         self.show()
 
     def startMain(self, aligner, extract_feature, face_detect):
         self.mainScene = MainScene(self)
+        # Отрисовка графических элементов и передача загруженных модулей
         self.mainScene.setupUI(aligner, extract_feature, face_detect)
         self.show()
 
 
+# Точка входа программы
 if __name__ == "__main__":
     import sys
 
