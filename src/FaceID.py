@@ -3,7 +3,7 @@ import sys
 import numpy as np
 
 
-def findPeople(features_arr, positions, thres=0.6, percent_thres=70):
+def findPeople(features_arr, jsonpath, positions, thres=0.6, percent_thres=70):
     """
     :param percent_thres: a
     :param features_arr: a list of 128d Features of all faces on screen
@@ -11,7 +11,7 @@ def findPeople(features_arr, positions, thres=0.6, percent_thres=70):
     :param thres: distance threshold
     :return: person name and percentage
     """
-    f = open('./services/storage.json', 'r')
+    f = open(jsonpath, 'r')
     data_set = json.loads(f.read())
     returnRes = []
     for (i, features_128D) in enumerate(features_arr):

@@ -1,3 +1,5 @@
 venv
 src/models
+src/build
+src/dist
 .idea

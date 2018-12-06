@@ -26,18 +26,24 @@ font_but.setWeight(95)
 class MainScene(QtCore.QObject):
     signal = pyqtSignal()
 
-    def __init__(self, parent):
+    def __init__(self, parent, args):
         super().__init__()
         self.__location__ = dirname(dirname(abspath(__file__)))
         self.MainWindow = parent
 
-        self.vs = cv2.VideoCapture(cv2.CAP_DSHOW)
+        self.cam = args.cam
+        self.rotation = args.rotation
+        self.vs = cv2.VideoCapture(args.cam)
+
+        self.jsonpath = args.json
         # Модуль для выявления лица
         self.face_detect = None
         # Модуль для выравнивания изображений
         self.aligner = None
         # Выявление особенностей лица
         self.extract_feature = None
+
+        self.args = None
 
         # Потоки
         self.identificationThread = None
@@ -164,14 +170,12 @@ class MainScene(QtCore.QObject):
                     color: rgba(210,210,210,1);
                     border: 1px solid rgba(210,210,210,1);
                     border-radius: 6px;
-                    text-shadow: 0px 0px 2px black;
                 }
                 #stopIdentificationButton:hover {
                     background-color: rgba(0,0,0,0);
                     color: white;
                     border: 1px solid white;
                     border-radius: 6px;
-                    text-shadow: 0px 0px 2px black;
                 }
             """
         )
@@ -214,12 +218,12 @@ class MainScene(QtCore.QObject):
                 self.log("Имя содержит недопустимые символы. Введите имя на английском")
                 return
 
-            f = open(os.path.join(self.__location__, 'services/storage.json'), 'r')
+            f = open(self.jsonpath, 'r')
             data_set = json.loads(f.read())
 
             if name in data_set:
                 data_set.pop(name)
-                f = open(os.path.join(self.__location__, 'services/storage.json'), 'w')
+                f = open(self.jsonpath, 'w')
                 f.write(json.dumps(data_set))
                 self.log("Пользователь " + name + " удален")
             else:
@@ -248,7 +252,7 @@ class MainScene(QtCore.QObject):
             if self.identificationThread is None:
                 self.identificationThread = Identification(
                     face_detect=self.face_detect, aligner=self.aligner, extract_feature=self.extract_feature,
-                    name=name, vs=self.vs
+                    name=name, vs=self.vs, rotation=self.rotation, jsonpath=self.jsonpath
                 )
                 self.signal.connect(self.identificationThread.stop)
                 self.identificationThread.start()
@@ -281,7 +285,7 @@ class MainScene(QtCore.QObject):
         if self.recognitionThread is None:
             self.recognitionThread = Recognition(
                 face_detect=self.face_detect, aligner=self.aligner, extract_feature=self.extract_feature,
-                name=self.textName.text(), vs=self.vs
+                name=self.textName.text(), vs=self.vs, rotation=self.rotation, jsonpath=self.jsonpath
             )
             self.recognitionThread.start()
             self.recognitionThread.log.connect(self.log)
@@ -313,7 +317,7 @@ class MainScene(QtCore.QObject):
             self.buttonStopIdentification.hide()
             self.recognitionThread = Recognition(
                 face_detect=self.face_detect, aligner=self.aligner, extract_feature=self.extract_feature,
-                name=name, vs=self.vs
+                name=name, vs=self.vs, rotation=self.rotation, jsonpath=self.jsonpath
             )
             self.recognitionThread.start()
             self.recognitionThread.log.connect(self.log)

@@ -1,3 +1,5 @@
+import argparse
+
 from PyQt5 import QtWidgets, QtGui
 
 from src.views.LoaderView import LoaderScene
@@ -12,9 +14,10 @@ font_but.setWeight(95)
 # Показ главного элемента
 class QthreadApp(QtWidgets.QMainWindow):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, args=None):
         QtWidgets.QWidget.__init__(self, parent)
 
+        self.args = args
         # задание иконки приложения
         image = QtGui.QIcon('./styles/spbstu.png')
         self.setWindowIcon(image)
@@ -51,7 +54,7 @@ class QthreadApp(QtWidgets.QMainWindow):
         self.show()
 
     def startMain(self, aligner, extract_feature, face_detect):
-        self.mainScene = MainScene(self)
+        self.mainScene = MainScene(self, args=args)
         # Отрисовка графических элементов и передача загруженных модулей
         self.mainScene.setupUI(aligner, extract_feature, face_detect)
         self.show()
@@ -59,12 +62,22 @@ class QthreadApp(QtWidgets.QMainWindow):
 
 # Точка входа программы
 if __name__ == "__main__":
-    import sys
+    import sys, os
+
+    __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--rotation", type=int, help="Camera rotation", default="0")
+    parser.add_argument("--cam", type=int, help="Camera number", default="0")
+    parser.add_argument("--json", type=str, help="Path to store face ", default= __location__ + "/services/storage.json")
+    args = parser.parse_args(sys.argv[1:])
+    print(args.json)
 
     app = QtWidgets.QApplication(sys.argv)
     desktop = QtWidgets.QApplication.desktop()
     resolution = desktop.availableGeometry()
-    myapp = QthreadApp(parent=None)
+
+    myapp = QthreadApp(parent=None, args=args)
     myapp.activateWindow()
     myapp.setWindowOpacity(1)
     myapp.show()

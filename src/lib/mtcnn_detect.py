@@ -349,6 +349,7 @@ class Network(object):
         softmax = tf.div(target_exp, normalize, name)
         return softmax
 
+
 class PNet(Network):
     def setup(self):
         (self.feed('data')  # pylint: disable=no-value-for-parameter, no-member
@@ -364,6 +365,7 @@ class PNet(Network):
 
         (self.feed('PReLU3')  # pylint: disable=no-value-for-parameter
          .conv(1, 1, 4, 1, 1, relu=False, name='conv4-2'))
+
 
 class RNet(Network):
     def setup(self):
@@ -383,6 +385,7 @@ class RNet(Network):
 
         (self.feed('prelu4')  # pylint: disable=no-value-for-parameter
          .fc(4, relu=False, name='conv5-2'))
+
 
 class ONet(Network):
     def setup(self):
@@ -451,6 +454,7 @@ def generateBoundingBox(imap, reg, scale, t):
     boundingbox = np.hstack([q1, q2, np.expand_dims(score, 1), reg])
     return boundingbox, reg
 
+
 # function pick = nms(boxes,threshold,type)
 def nms(boxes, threshold, method):
     if boxes.size == 0:
@@ -483,6 +487,7 @@ def nms(boxes, threshold, method):
         I = I[np.where(o <= threshold)]
     pick = pick[0:counter]
     return pick
+
 
 # function [dy edy dx edx y ey x ex tmpw tmph] = pad(total_boxes,w,h)
 def pad(total_boxes, w, h):
@@ -519,6 +524,7 @@ def pad(total_boxes, w, h):
 
     return dy, edy, dx, edx, y, ey, x, ex, tmpw, tmph
 
+
 # function [bboxA] = rerec(bboxA)
 def rerec(bboxA):
     # convert bboxA to square
@@ -529,6 +535,7 @@ def rerec(bboxA):
     bboxA[:, 1] = bboxA[:, 1] + h * 0.5 - l * 0.5
     bboxA[:, 2:4] = bboxA[:, 0:2] + np.transpose(np.tile(l, (2, 1)))
     return bboxA
+
 
 def imresample(img, sz):
     im_data = cv2.resize(img, (sz[1], sz[0]), interpolation=cv2.INTER_AREA)  # @UndefinedVariable
