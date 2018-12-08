@@ -1,5 +1,6 @@
 import cv2
 import os
+import numpy
 
 
 class CrownMask:
@@ -7,7 +8,11 @@ class CrownMask:
     def __init__(self):
         self.x_offset = self.y_offset = 50
         self.__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-        self.crown = cv2.imread(os.path.join(self.__location__, '3.png'), -1)
+        stream = open(os.path.join(self.__location__, '3.png'), "rb")
+        bytes = bytearray(stream.read())
+        numpyarray = numpy.asarray(bytes, dtype=numpy.uint8)
+        self.crown = cv2.imdecode(numpyarray, cv2.IMREAD_UNCHANGED)
+
         self.alpha_s = self.crown[:, :, 3] / 255.0
         self.alpha_l = 1.0 - self.alpha_s
 
