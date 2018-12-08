@@ -99,3 +99,7 @@ class LoaderScene(QtCore.QObject):
         self.face_detect = face_detect
         # запуск главного окна
         self.startProgram.emit(aligner, extract_feature, face_detect)
+
+    def interruptLoading(self):
+        if self.loaderThread is not None:
+            self.loaderThread.interrupt()

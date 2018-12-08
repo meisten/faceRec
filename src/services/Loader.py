@@ -23,3 +23,6 @@ class Loader(QtCore.QThread):
         face_detect = MTCNNDetect(FRGraph, scale_factor=2)
         self.finishLoad.emit(aligner, extract_feature, face_detect)
         self.quit()
+
+    def interrupt(self):
+        self.quit()

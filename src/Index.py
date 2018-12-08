@@ -1,6 +1,7 @@
 import argparse
 
 from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtCore import QTimer
 
 from src.views.LoaderView import LoaderScene
 from src.views.MainView import MainScene
@@ -59,6 +60,18 @@ class QthreadApp(QtWidgets.QMainWindow):
         self.mainScene.setupUI(aligner, extract_feature, face_detect)
         self.show()
 
+    def closeApp(self):
+        try:
+            if self.mainScene is not None:
+                self.mainScene.closeApp()
+                self.mainScene = None
+            if self.loaderScene is not None:
+                self.loaderScene.interruptLoading()
+                self.loaderScene = None
+            self.close()
+        except Exception as e:
+            print(str(e))
+
 
 # Точка входа программы
 if __name__ == "__main__":
@@ -78,11 +91,13 @@ if __name__ == "__main__":
     resolution = desktop.availableGeometry()
 
     myapp = QthreadApp(parent=None, args=args)
+    app.aboutToQuit.connect(lambda: myapp.closeApp())
     myapp.activateWindow()
     myapp.setWindowOpacity(1)
     myapp.show()
     myapp.move(resolution.center() - myapp.rect().center())
     sys.exit(app.exec_())
 else:
+    import sys
     desktop = QtWidgets.QApplication.desktop()
     resolution = desktop.availableGeometry()

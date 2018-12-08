@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QImage
 
 from src.FaceID import findPeople
@@ -27,14 +27,6 @@ class Recognition(QtCore.QThread):
         self.crownMask = CrownMask()
 
         QtCore.QThread.__init__(self, parent)
-
-    def interrupt(self):
-        try:
-            self.running = False
-            self.log.emit("Распознавание прервана по просьбе пользователя")
-            self.quit()
-        except Exception as e:
-            print(str(e))
 
     def run(self):
         try:
@@ -94,5 +86,15 @@ class Recognition(QtCore.QThread):
                         self.up.emit(image)
                     self.up.emit(image)
 
+                if not self.running:
+                    self.quit()
+
         except Exception as e:
             print(str(e))
+
+    @pyqtSlot(name="interrupt")
+    def interrupt(self):
+        self.running = False
+        self.log.emit("Распознавание прервано по просьбе пользователя")
+        print("Recognized thread is killed")
+        self.wait()

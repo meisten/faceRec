@@ -1,13 +1,12 @@
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtGui import QImage
 from scipy.ndimage.filters import gaussian_filter
 
 import os
 import json
 import numpy as np
 
-import cv2
 import imutils
 
 
@@ -87,13 +86,18 @@ class Identification(QtCore.QThread):
                                 self.process.emit(image)
                                 self.save()
 
+                if not self.running:
+                    self.quit()
+
         except Exception as e:
             print(str(e))
 
+    @pyqtSlot(name="interrupt")
     def interrupt(self):
         self.running = False
         self.log.emit("Идентификация прервана по просьбе пользователя")
-        self.quit()
+        print("Identification thread is killed")
+        self.wait()
 
     @pyqtSlot(name="saveIdentificationResult")
     def stop(self):

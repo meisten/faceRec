@@ -3,7 +3,7 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QGraphicsDropShadowEffect, QFrame
 import datetime
-import os
+
 from os.path import dirname, abspath
 import json
 
@@ -25,6 +25,8 @@ font_but.setWeight(95)
 # Главное окно
 class MainScene(QtCore.QObject):
     signal = pyqtSignal()
+    interruptIdentificationSignal = pyqtSignal()
+    interruptRecognitionSignal = pyqtSignal()
 
     def __init__(self, parent, args):
         super().__init__()
@@ -33,7 +35,7 @@ class MainScene(QtCore.QObject):
 
         self.cam = args.cam
         self.rotation = args.rotation
-        self.vs = cv2.VideoCapture(args.cam)
+        self.vs = cv2.VideoCapture(cv2.CAP_DSHOW + args.cam)
 
         self.jsonpath = args.json
         # Модуль для выявления лица
@@ -245,9 +247,7 @@ class MainScene(QtCore.QObject):
                 self.log("Имя содержит недопустимые символы. Введите имя на английском")
                 return
 
-            if self.recognitionThread is not None:
-                self.recognitionThread.interrupt()
-                self.recognitionThread = None
+            self.interruptRecognition()
 
             if self.identificationThread is None:
                 self.identificationThread = Identification(
@@ -255,6 +255,7 @@ class MainScene(QtCore.QObject):
                     name=name, vs=self.vs, rotation=self.rotation, jsonpath=self.jsonpath
                 )
                 self.signal.connect(self.identificationThread.stop)
+                self.interruptIdentificationSignal.connect(self.identificationThread.interrupt)
                 self.identificationThread.start()
                 self.identificationThread.log.connect(self.log)
                 self.identificationThread.up.connect(self.update)
@@ -279,6 +280,30 @@ class MainScene(QtCore.QObject):
         except Exception as e:
             print("4: " + str(e))
 
+    # Прерывание процесса идентификации
+    def interruptIdentification(self):
+        try:
+            if self.identificationThread is not None:
+                print("interrupt identification")
+                self.interruptIdentificationSignal.emit()
+                self.identificationThread = None
+        except Exception as e:
+            print("4: " + str(e))
+
+    # Прерывание процесса распознавания
+    def interruptRecognition(self):
+        try:
+            if self.recognitionThread is not None:
+                print("interrupt recognition")
+                self.interruptRecognitionSignal.emit()
+                self.recognitionThread = None
+        except Exception as e:
+            print("4: " + str(e))
+
+    def closeApp(self):
+        self.interruptRecognition()
+        self.interruptIdentification()
+
     # Коллбек, вызываемый процессом обучения (успешное сохранение данных)
     def successfulSaveIdentificationResult(self):
         self.identificationThread = None
@@ -287,6 +312,7 @@ class MainScene(QtCore.QObject):
                 face_detect=self.face_detect, aligner=self.aligner, extract_feature=self.extract_feature,
                 name=self.textName.text(), vs=self.vs, rotation=self.rotation, jsonpath=self.jsonpath
             )
+            self.interruptRecognitionSignal.connect(self.recognitionThread.interrupt)
             self.recognitionThread.start()
             self.recognitionThread.log.connect(self.log)
             self.recognitionThread.up.connect(self.update)
@@ -307,18 +333,15 @@ class MainScene(QtCore.QObject):
                 self.log("Имя содержит недопустимые символы. Введите имя на английском")
                 return
 
-            if self.identificationThread is not None:
-                self.identificationThread.interrupt()
-                self.identificationThread = None
-
-            if self.recognitionThread is not None:
-                self.recognitionThread.interrupt()
+            self.interruptIdentification()
+            self.interruptRecognition()
 
             self.buttonStopIdentification.hide()
             self.recognitionThread = Recognition(
                 face_detect=self.face_detect, aligner=self.aligner, extract_feature=self.extract_feature,
                 name=name, vs=self.vs, rotation=self.rotation, jsonpath=self.jsonpath
             )
+            self.interruptRecognitionSignal.connect(self.recognitionThread.interrupt)
             self.recognitionThread.start()
             self.recognitionThread.log.connect(self.log)
             self.recognitionThread.up.connect(self.update)
