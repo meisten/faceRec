@@ -94,6 +94,7 @@ class Identification(QtCore.QThread):
 
     @pyqtSlot(name="interrupt")
     def interrupt(self):
+        self.disAllowStopIdentification.emit()
         self.running = False
         self.log.emit("Идентификация прервана по просьбе пользователя")
         print("Identification thread is killed")
